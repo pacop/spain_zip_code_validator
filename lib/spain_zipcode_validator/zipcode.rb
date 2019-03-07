@@ -25,7 +25,8 @@ module SpainZipcodeValidator
         return false
       end
 
-      if @province.present? && !province_by_zipcode[:unofficial_names].include?(@province)
+      if @province.present? && !(province_by_zipcode[:unofficial_names].include?(@province) ||
+                                 province_by_zipcode[:code].include?(@province))
         @error = :invalid_zipcode_province
         return false
       end
