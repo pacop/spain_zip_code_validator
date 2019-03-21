@@ -4,9 +4,10 @@ module SpainZipcodeValidator
 
     FORMAT_ZIPCODE = /\A([0-9]{5})\Z/.freeze
 
-    def initialize(args = {})
+    def initialize(args={})
       @zipcode = args.fetch(:zipcode)
       @province = args.fetch(:province)
+      @mode = args.fetch(:mode)
       @error = nil
     end
 
@@ -25,8 +26,7 @@ module SpainZipcodeValidator
         return false
       end
 
-      if @province.present? && !(province_by_zipcode[:unofficial_names].include?(@province) ||
-                                 province_by_zipcode[:code] == @province)
+      if @province.present? && send("mode_#{@mode}", province_by_zipcode)
         @error = :invalid_zipcode_province
         return false
       end
@@ -34,6 +34,21 @@ module SpainZipcodeValidator
       true
     end
 
-    alias_method :validate, :valid?
+    alias validate valid?
+
+    protected
+
+    def mode_code(province_by_zipcode)
+      province_by_zipcode[:code] != @province
+    end
+
+    def mode_name(province_by_zipcode)
+      !province_by_zipcode[:unofficial_names].include?(@province)
+    end
+
+    def mode_all(province_by_zipcode)
+      !(province_by_zipcode[:unofficial_names].include?(@province) ||
+        province_by_zipcode[:code] == @province)
+    end
   end
 end
